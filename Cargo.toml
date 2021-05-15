@@ -1,0 +1,30 @@
+[package]
+name = "stackblur"
+description = "A fast approximation of gaussian blur"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+authors = ["Owen Walpole <owen@walpole.dev>"]
+repository = "https://github.com/owenthewizard/stackblur.git"
+readme = "README.md"
+keywords = ["stackblur", "gaussian", "blur"]
+documentation = "https://docs.rs/stackblur"
+homepage = "https://github.com/owenthewizard/stackblur"
+categories = ["multimedia::images", "algorithms", "graphics"]
+include = ["Cargo.toml", "README.md", "LICENSE-MIT.md", "LICENSE-APACHE.md", "src/*.rs"]
+edition = "2018"
+
+[badges]
+is-it-maintained-issue-resolution = { repository = "owenthewizard/stackblur" }
+is-it-maintained-open-issues = { repository = "owenthewizard/stackblur" }
+
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+
+[dev-dependencies]
+anyhow = "1.0"
+png = "0.16"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
