@@ -39,6 +39,7 @@ const fn red(p: u32) -> u32 {
 const fn green(p: u32) -> u32 {
     (p >> 8) & 0xff
 }
+
 const fn blue(p: u32) -> u32 {
     p & 0xff
 }
