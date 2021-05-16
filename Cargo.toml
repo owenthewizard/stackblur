@@ -19,7 +19,9 @@ is-it-maintained-open-issues = { repository = "owenthewizard/stackblur" }
 
 maintenance = { status = "actively-developed" }
 
-[dependencies]
+[dependencies.flame]
+version = "0.2"
+optional = true
 
 [dev-dependencies]
 anyhow = "1.0"
@@ -28,3 +30,4 @@ png = "0.16"
 [profile.release]
 lto = "fat"
 codegen-units = 1
+#debug = true # for flamegraph, disable for release
