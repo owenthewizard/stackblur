@@ -310,9 +310,9 @@ mod test {
     #[test]
     fn tiny_image() {
         let mut v = vec![0x12345678];
-        let w = NonZeroUsize::new(1);
-        let h = NonZeroUsize::new(1);
-        let r = NonZeroU8::new(1);
+        let w = NonZeroUsize::new(1).unwrap();
+        let h = NonZeroUsize::new(1).unwrap();
+        let r = NonZeroU8::new(1).unwrap();
 
         blur(&mut v, w, h, r);
 
@@ -322,9 +322,9 @@ mod test {
     #[test]
     fn tiny_image_large_radius() {
         let mut v = vec![0x12345678; 9];
-        let w = NonZeroUsize::new(3);
-        let h = NonZeroUsize::new(3);
-        let r = NonZeroU8::new(u8::MAX);
+        let w = NonZeroUsize::new(3).unwrap();
+        let h = NonZeroUsize::new(3).unwrap();
+        let r = NonZeroU8::new(u8::MAX).unwrap();
 
         blur(&mut v, w, h, r);
 
