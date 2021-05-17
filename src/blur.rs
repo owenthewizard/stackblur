@@ -1,6 +1,9 @@
 use std::cmp::min;
 use std::num::{NonZeroU8, NonZeroUsize};
 
+#[cfg(test)]
+use mutagen::mutate;
+
 const MUL_TABLE: [u32; 255] = [
     512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364,
     328, 298, 271, 496, 456, 420, 388, 360, 335, 312, 292, 273, 512, 482, 454, 428, 405, 383, 364,
@@ -50,6 +53,7 @@ const fn pixel(r: u32, g: u32, b: u32) -> u32 {
 
 /// Performs a pass of stackblur in both directions.
 /// Input is expected to be in linear RGB color space.
+#[cfg_attr(test, mutate)]
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     blur_horiz(src, width, height, radius);
     blur_vert(src, width, height, radius);
@@ -57,6 +61,7 @@ pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: 
 
 /// Performs a horizontal pass of stackblur.
 /// Input is expected to be in linear RGB color space.
+#[cfg_attr(test, mutate)]
 pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
     let height = height.get();
@@ -177,6 +182,7 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, ra
 
 /// Performs a vertical pass of stackblur.
 /// Input is expected to be in linear RGB color space.
+#[cfg_attr(test, mutate)]
 pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
     let height = height.get();

@@ -26,6 +26,7 @@ optional = true
 [dev-dependencies]
 anyhow = "1.0"
 png = "0.16"
+mutagen = { git = "git://github.com/llogiq/mutagen.git" }
 
 [profile.release]
 lto = "fat"
