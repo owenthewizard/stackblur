@@ -300,3 +300,34 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::num::{NonZeroU8, NonZeroUsize};
+
+    use super::blur;
+
+    #[test]
+    fn tiny_image() {
+        let mut v = vec![0x12345678];
+        let w = NonZeroUsize::new(1);
+        let h = NonZeroUsize::new(1);
+        let r = NonZeroU8::new(1);
+
+        blur(&mut v, w, h, r);
+
+        dbg!(v);
+    }
+
+    #[test]
+    fn tiny_image_large_radius() {
+        let mut v = vec![0x12345678; 9];
+        let w = NonZeroUsize::new(3);
+        let h = NonZeroUsize::new(3);
+        let r = NonZeroU8::new(u8::MAX);
+
+        blur(&mut v, w, h, r);
+
+        dbg!(v);
+    }
+}
