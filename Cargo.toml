@@ -19,6 +19,9 @@ is-it-maintained-open-issues = { repository = "owenthewizard/stackblur" }
 
 maintenance = { status = "actively-developed" }
 
+[dependencies]
+itertools = "0.10"
+
 [dependencies.flame]
 version = "0.2"
 optional = true

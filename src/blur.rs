@@ -1,5 +1,9 @@
 use std::cmp::min;
+use std::collections::VecDeque;
+use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
+
+use itertools::peek_nth;
 
 const MUL_TABLE: [u32; 255] = [
     512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364,
@@ -51,126 +55,64 @@ const fn pixel(r: u32, g: u32, b: u32) -> u32 {
 /// Performs a pass of stackblur in both directions.
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
-    blur_horiz(src, width, height, radius);
-    blur_vert(src, width, height, radius);
+    blur_horiz(src, width, radius);
+    //blur_vert(src, width, height, radius);
 }
 
 /// Performs a horizontal pass of stackblur.
 /// Input is expected to be in linear RGB color space.
-pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
+pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
-    let height = height.get();
     let radius = u32::from(min(radius.get(), 254));
     let r = radius as usize;
 
-    let wm = width - 1;
     let div = 2 * r + 1;
-    let mul_sum = MUL_TABLE[r];
-    let shr_sum = SHR_TABLE[r];
-    let mut stack = vec![0; div];
 
-    for y in 0..height {
-        let mut sum_r = 0;
-        let mut sum_g = 0;
-        let mut sum_b = 0;
+    for row in src.chunks_exact_mut(width) {
+        let first = *row.first().unwrap();
+        let mut last = *row.last().unwrap();
 
-        let mut sum_out_r = 0;
-        let mut sum_out_g = 0;
-        let mut sum_out_b = 0;
+        // TODO: not sure if `r` is the correct value here...
+        let mut queue_r = VecDeque::with_capacity(div);
+        let mut queue_g = VecDeque::with_capacity(div);
+        let mut queue_b = VecDeque::with_capacity(div);
 
-        let mut src_i = width * y;
-        let mut stack_i;
-
-        for i in 0..=radius {
-            stack_i = i as usize;
-            stack[stack_i] = src[src_i];
-
-            sum_r += red(src[src_i]) * (i + 1);
-            sum_g += green(src[src_i]) * (i + 1);
-            sum_b += blue(src[src_i]) * (i + 1);
-
-            sum_out_r += red(src[src_i]);
-            sum_out_g += green(src[src_i]);
-            sum_out_b += blue(src[src_i]);
+        // fill with left edge pixel
+        for v in iter::repeat(first).take(r + 1) {
+            queue_r.push_back(red(v));
+            queue_g.push_back(green(v));
+            queue_b.push_back(blue(v));
         }
 
-        let mut sum_in_r = 0;
-        let mut sum_in_g = 0;
-        let mut sum_in_b = 0;
-
-        for i in 1..=radius {
-            if i as usize <= wm {
-                src_i += 1
-            }
-
-            stack_i = i as usize + r;
-            stack[stack_i] = src[src_i];
-
-            sum_r += red(src[src_i]) * (radius + 1 - i);
-            sum_g += green(src[src_i]) * (radius + 1 - i);
-            sum_b += blue(src[src_i]) * (radius + 1 - i);
-
-            sum_in_r += red(src[src_i]);
-            sum_in_g += green(src[src_i]);
-            sum_in_b += blue(src[src_i]);
+        // fill with starting pixels
+        for v in row.iter().copied().take(r) {
+            queue_r.push_back(red(v));
+            queue_g.push_back(green(v));
+            queue_b.push_back(blue(v));
         }
 
-        let mut sp = r;
-        let mut xp = min(r, wm);
+        debug_assert_eq!(queue_r.len(), div);
 
-        src_i = xp + y * width;
-        let mut dst_i = y * width;
+        let mut row_iter = peek_nth(row.iter_mut());
 
-        for _x in 0..width {
-            src[dst_i] = pixel(
-                (sum_r * mul_sum) >> shr_sum,
-                (sum_g * mul_sum) >> shr_sum,
-                (sum_b * mul_sum) >> shr_sum,
+        while let Some(px) = row_iter.next() {
+            // set pixel
+            *px = pixel(
+                queue_r.iter().sum::<u32>() / div as u32,
+                queue_g.iter().sum::<u32>() / div as u32,
+                queue_b.iter().sum::<u32>() / div as u32,
             );
-            dst_i += 1;
 
-            sum_r -= sum_out_r;
-            sum_g -= sum_out_g;
-            sum_b -= sum_out_b;
+            // drop left edge of kernel
+            let _ = queue_r.pop_front();
+            let _ = queue_g.pop_front();
+            let _ = queue_b.pop_front();
 
-            let mut stack_start = sp + div - r;
-            if stack_start >= div {
-                stack_start -= div
-            }
-            stack_i = stack_start;
-
-            sum_out_r -= red(stack[stack_i]);
-            sum_out_g -= green(stack[stack_i]);
-            sum_out_b -= blue(stack[stack_i]);
-
-            if xp < wm {
-                src_i += 1;
-                xp += 1;
-            }
-
-            stack[stack_i] = src[src_i];
-
-            sum_in_r += red(src[src_i]);
-            sum_in_g += green(src[src_i]);
-            sum_in_b += blue(src[src_i]);
-
-            sum_r += sum_in_r;
-            sum_g += sum_in_g;
-            sum_b += sum_in_b;
-
-            sp += 1;
-            if sp >= div {
-                sp = 0
-            }
-            stack_i = sp;
-
-            sum_out_r += red(stack[stack_i]);
-            sum_out_g += green(stack[stack_i]);
-            sum_out_b += blue(stack[stack_i]);
-
-            sum_in_r -= red(stack[stack_i]);
-            sum_in_g -= green(stack[stack_i]);
-            sum_in_b -= blue(stack[stack_i]);
+            // add right edge of kernel
+            let next = **row_iter.peek_nth(r).unwrap_or(&&mut last);
+            queue_r.push_back(red(next));
+            queue_g.push_back(green(next));
+            queue_b.push_back(blue(next));
         }
     }
 }
