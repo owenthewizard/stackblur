@@ -74,11 +74,11 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
         let first = *row.first().unwrap();
         let mut last = *row.last().unwrap();
 
-        let mut queue = BlurStack::with_capacity(r);
+        let mut queue = BlurStack::with_capacity(2 * r + 1);
 
         // fill with left edge pixel
-        for v in iter::repeat(first).take(r + 1) {
-            queue.push_back(v);
+        for _ in 0..=r {
+            queue.push_back(first);
         }
 
         // fill with starting pixels
