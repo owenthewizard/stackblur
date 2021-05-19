@@ -8,6 +8,9 @@ use itertools::peek_nth;
 mod blurstack;
 use blurstack::BlurStack;
 
+mod columns;
+use columns::*;
+
 const MUL_TABLE: [u32; 255] = [
     512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364,
     328, 298, 271, 496, 456, 420, 388, 360, 335, 312, 292, 273, 512, 482, 454, 428, 405, 383, 364,
@@ -125,9 +128,7 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
 
         // backfill queue with starting pixels
         let mut queue = src
-            .iter()
-            .skip(x)
-            .step_by(width)
+            .column(x, width)
             .copied()
             .chain(iter::repeat(last))
             .take(r)
@@ -135,7 +136,7 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
         queue.reserve_exact(2 * r + 1);
         let mut queue = BlurStack::from(queue);
 
-        let mut col_iter = peek_nth(src.iter_mut().skip(x).step_by(width));
+        let mut col_iter = peek_nth(src.column_mut(x, width));
 
         // fill with top edge pixel
         for _ in 0..=r {
