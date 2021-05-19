@@ -60,15 +60,14 @@ fn main() -> Result<()> {
             println!("Converting from gamma-encoded sRGB to linear...");
             buffer.iter_mut().for_each(|c| *c = srgb_to_linear(*c));
 
+            let buf32 = unsafe { buffer.align_to_mut::<u32>().1 };
             println!("Blurring...");
-            unsafe {
-                blur(
-                    buffer.align_to_mut::<u32>().1,
-                    NonZeroUsize::new(info.width as usize).unwrap(),
-                    NonZeroUsize::new(info.height as usize).unwrap(),
-                    NonZeroU8::new_unchecked(15),
-                );
-            }
+            blur(
+                buf32,
+                NonZeroUsize::new(info.width as usize).unwrap(),
+                NonZeroUsize::new(info.height as usize).unwrap(),
+                NonZeroU8::new(15).unwrap(),
+            );
 
             println!("Converting back to gamma-encoded sRGB...");
             buffer.iter_mut().for_each(|c| *c = linear_to_srgb(*c));
