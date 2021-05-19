@@ -1,9 +1,11 @@
 use std::cmp::min;
-use std::collections::VecDeque;
 use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
 
 use itertools::peek_nth;
+
+mod blurstack;
+use blurstack::BlurStack;
 
 const MUL_TABLE: [u32; 255] = [
     512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364,
@@ -56,7 +58,6 @@ const fn pixel(r: u32, g: u32, b: u32) -> u32 {
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     blur_horiz(src, width, radius);
-    blur_horiz(src, width, radius);
     //blur_vert(src, width, height, radius);
 }
 
@@ -65,53 +66,46 @@ pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: 
 /// Needs to be ran twice for full effect!
 pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
-    let radius = u32::from(min(radius.get() | 1, 255));
+    let radius = u32::from(radius.get());
     let r = radius as usize;
+    let div = radius * (radius + 2) + 1;
 
     src.chunks_exact_mut(width).for_each(|row| {
         let first = *row.first().unwrap();
         let mut last = *row.last().unwrap();
 
-        let mut queue_r = VecDeque::with_capacity(r);
-        let mut queue_g = VecDeque::with_capacity(r);
-        let mut queue_b = VecDeque::with_capacity(r);
+        let mut queue = BlurStack::with_capacity(r);
 
         // fill with left edge pixel
-        for v in iter::repeat(first).take(r / 2 + 1) {
-            queue_r.push_back(red(v));
-            queue_g.push_back(green(v));
-            queue_b.push_back(blue(v));
+        for v in iter::repeat(first).take(r + 1) {
+            queue.push_back(v);
         }
 
         // fill with starting pixels
-        for v in row.iter().copied().chain(iter::repeat(last)).take(r / 2) {
-            queue_r.push_back(red(v));
-            queue_g.push_back(green(v));
-            queue_b.push_back(blue(v));
+        for v in row.iter().copied().chain(iter::repeat(last)).take(r) {
+            queue.push_back(v);
         }
 
-        debug_assert_eq!(queue_r.len(), r);
+        debug_assert_eq!(queue.len(), 2 * r + 1);
 
         let mut row_iter = peek_nth(row.iter_mut());
 
         while let Some(px) = row_iter.next() {
             // set pixel
+            //
+            // using MUL_TABLE and SHR_TABLE didn't speed things up in my testing of 100 iterations
             *px = pixel(
-                queue_r.iter().sum::<u32>() / radius,
-                queue_g.iter().sum::<u32>() / radius,
-                queue_b.iter().sum::<u32>() / radius,
+                queue.sum_r() / div,
+                queue.sum_g() / div,
+                queue.sum_b() / div,
             );
 
             // drop left edge of kernel
-            let _ = queue_r.pop_front();
-            let _ = queue_g.pop_front();
-            let _ = queue_b.pop_front();
+            let _ = queue.pop_front();
 
             // add right edge of kernel
-            let next = **row_iter.peek_nth(r / 2).unwrap_or(&&mut last);
-            queue_r.push_back(red(next));
-            queue_g.push_back(green(next));
-            queue_b.push_back(blue(next));
+            let next = **row_iter.peek_nth(r).unwrap_or(&&mut last);
+            queue.push_back(next);
         }
     });
 }
