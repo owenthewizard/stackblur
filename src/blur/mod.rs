@@ -63,7 +63,6 @@ pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: 
 
 /// Performs a horizontal pass of stackblur.
 /// Input is expected to be in linear RGB color space.
-/// Needs to be ran twice for full effect!
 pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
     let radius = u32::from(radius.get());
