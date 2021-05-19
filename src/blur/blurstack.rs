@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::convert::From;
 
 const fn red(p: u32) -> u32 {
     (p >> 16) & 0xff
@@ -79,6 +80,10 @@ impl BlurStack {
         self.0.pop_front()
     }
 
+    pub fn push_front(&mut self, e: u32) {
+        self.0.push_front(e)
+    }
+
     pub fn push_back(&mut self, e: u32) {
         self.0.push_back(e)
     }
@@ -89,5 +94,11 @@ impl BlurStack {
 
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+}
+
+impl From<VecDeque<u32>> for BlurStack {
+    fn from(v: VecDeque<u32>) -> Self {
+        Self(v)
     }
 }

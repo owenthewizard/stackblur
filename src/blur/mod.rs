@@ -1,4 +1,5 @@
 use std::cmp::min;
+use std::collections::VecDeque;
 use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
 
@@ -57,8 +58,8 @@ const fn pixel(r: u32, g: u32, b: u32) -> u32 {
 /// Performs a pass of stackblur in both directions.
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
-    blur_horiz(src, width, radius);
-    //blur_vert(src, width, height, radius);
+    //blur_horiz(src, width, radius);
+    blur_vert(src, width, height, radius);
 }
 
 /// Performs a horizontal pass of stackblur.
@@ -114,117 +115,51 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
 pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     let width = width.get();
     let height = height.get();
-    let radius = u32::from(min(radius.get() | 1, 253));
+    let radius = u32::from(radius.get());
     let r = radius as usize;
-
-    let hm = height - 1;
-    let div = 2 * r + 1;
-    let mul_sum = MUL_TABLE[r];
-    let shr_sum = SHR_TABLE[r];
-    let mut stack = vec![0; div];
+    let div = radius * (radius + 2) + 1;
 
     for x in 0..width {
-        let mut sum_r = 0;
-        let mut sum_g = 0;
-        let mut sum_b = 0;
+        let first = src[x];
+        let mut last = src[x + width * (height - 1)];
 
-        let mut sum_out_r = 0;
-        let mut sum_out_g = 0;
-        let mut sum_out_b = 0;
+        // backfill queue with starting pixels
+        let mut queue = src
+            .iter()
+            .skip(x)
+            .step_by(width)
+            .copied()
+            .chain(iter::repeat(last))
+            .take(r)
+            .collect::<VecDeque<u32>>();
+        queue.reserve_exact(2 * r + 1);
+        let mut queue = BlurStack::from(queue);
 
-        let mut src_i = x;
-        let mut stack_i;
+        let mut col_iter = peek_nth(src.iter_mut().skip(x).step_by(width));
 
-        for i in 0..=radius {
-            stack_i = i as usize;
-            stack[stack_i] = src[src_i];
-
-            sum_r += red(src[src_i]) * (i + 1);
-            sum_g += green(src[src_i]) * (i + 1);
-            sum_b += blue(src[src_i]) * (i + 1);
-
-            sum_out_r += red(src[src_i]);
-            sum_out_g += green(src[src_i]);
-            sum_out_b += blue(src[src_i]);
+        // fill with top edge pixel
+        for _ in 0..=r {
+            queue.push_front(first);
         }
 
-        let mut sum_in_r = 0;
-        let mut sum_in_g = 0;
-        let mut sum_in_b = 0;
+        debug_assert_eq!(queue.len(), 2 * r + 1);
 
-        for i in 1..=radius {
-            if i as usize <= hm {
-                src_i += width
-            }
-
-            stack_i = i as usize + r;
-            stack[stack_i] = src[src_i];
-
-            sum_r += red(src[src_i]) * (radius + 1 - i);
-            sum_g += green(src[src_i]) * (radius + 1 - i);
-            sum_b += blue(src[src_i]) * (radius + 1 - i);
-
-            sum_in_r += red(src[src_i]);
-            sum_in_g += green(src[src_i]);
-            sum_in_b += blue(src[src_i]);
-        }
-
-        let mut sp = r;
-        let mut yp = min(r, hm);
-
-        src_i = x + yp * width;
-        let mut dst_i = x;
-
-        for _y in 0..height {
-            src[dst_i] = pixel(
-                (sum_r * mul_sum) >> shr_sum,
-                (sum_g * mul_sum) >> shr_sum,
-                (sum_b * mul_sum) >> shr_sum,
+        while let Some(px) = col_iter.next() {
+            // set pixel
+            //
+            // using MUL_TABLE and SHR_TABLE didn't speed things up in my testing of 100 iterations
+            *px = pixel(
+                queue.sum_r() / div,
+                queue.sum_g() / div,
+                queue.sum_b() / div,
             );
-            dst_i += width;
 
-            sum_r -= sum_out_r;
-            sum_g -= sum_out_g;
-            sum_b -= sum_out_b;
+            // drop top edge of kernel
+            let _ = queue.pop_front();
 
-            let mut stack_start = sp + div - r;
-            if stack_start >= div {
-                stack_start -= div
-            }
-            stack_i = stack_start;
-
-            sum_out_r -= red(stack[stack_i]);
-            sum_out_g -= green(stack[stack_i]);
-            sum_out_b -= blue(stack[stack_i]);
-
-            if yp < hm {
-                src_i += width;
-                yp += 1;
-            }
-
-            stack[stack_i] = src[src_i];
-
-            sum_in_r += red(src[src_i]);
-            sum_in_g += green(src[src_i]);
-            sum_in_b += blue(src[src_i]);
-
-            sum_r += sum_in_r;
-            sum_g += sum_in_g;
-            sum_b += sum_in_b;
-
-            sp += 1;
-            if sp >= div {
-                sp = 0;
-            }
-            stack_i = sp;
-
-            sum_out_r += red(stack[stack_i]);
-            sum_out_g += green(stack[stack_i]);
-            sum_out_b += blue(stack[stack_i]);
-
-            sum_in_r -= red(stack[stack_i]);
-            sum_in_g -= green(stack[stack_i]);
-            sum_in_b -= blue(stack[stack_i]);
+            // add bottom edge of kernel
+            let next = **col_iter.peek_nth(r).unwrap_or(&&mut last);
+            queue.push_back(next);
         }
     }
 }
