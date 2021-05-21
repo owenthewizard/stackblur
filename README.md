@@ -49,8 +49,8 @@ All examples blurred in both directions with radius 15.
 ![cballs without blur](samples/input/cballs.png)
 ![cballs blurred](samples/output/cballs.png)
 
-![western without blur](samples/input/western.png)
-![western blurred](samples/output/western.png)
+![lonerider2 without blur](samples/input/lonerider2.jpg)
+![lonerider2 blurred](samples/output/lonerider2.jpg)
 
 Add RGBA PNGs to [`samples/input`](samples/input) and run
 `cargo run --release --example samples` to see your own!
