@@ -25,7 +25,11 @@ optional = true
 
 [dev-dependencies]
 anyhow = "1.0"
-png = "0.16"
+
+[dev-dependencies.image]
+version = "0.23"
+default-features = false
+features = ["jpeg", "png", "jpeg_rayon"]
 
 [profile.release]
 lto = "fat"
