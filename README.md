@@ -52,7 +52,7 @@ All examples blurred in both directions with radius 15.
 ![lonerider2 without blur](samples/input/lonerider2.jpg)
 ![lonerider2 blurred](samples/output/lonerider2.jpg)
 
-Add RGBA PNGs to [`samples/input`](samples/input) and run
+Add PNGs or JPEGs to [`samples/input`](samples/input) and run
 `cargo run --release --example samples` to see your own!
 
 ### Coding Style
