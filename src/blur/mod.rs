@@ -14,7 +14,7 @@ const fn pixel(a: u32, r: u32, g: u32, b: u32) -> u32 {
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     blur_horiz(src, width, radius);
-    blur_vert(src, width, height, radius);
+    //blur_vert(src, width, height, radius);
 }
 
 /// Performs a horizontal pass of stackblur.
