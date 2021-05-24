@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::collections::VecDeque;
 use std::convert::From;
 
@@ -22,19 +23,15 @@ pub struct BlurStack(VecDeque<u32>);
 
 impl BlurStack {
     pub fn sums(&self) -> (u32, u32, u32, u32) {
-        let n = self.0.len() as u32 / 2 + 1;
-        let mut iter = self.0.iter().copied();
-
         let (mut a, mut r, mut g, mut b) = (0, 0, 0, 0);
-        let mut add = |(v, i)| {
+        let n = self.0.len() as u32;
+        for (&v, i) in self.0.iter().zip(0_u32..) {
+            let i = min(i + 1, n - i);
             a += alpha(v) * i;
             r += red(v) * i;
             g += green(v) * i;
             b += blue(v) * i;
-        };
-
-        iter.by_ref().take(n as usize).zip(1..).for_each(&mut add);
-        iter.zip((1..n).rev()).for_each(&mut add);
+        }
         (a, r, g, b)
     }
 
