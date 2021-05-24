@@ -1,9 +1,9 @@
 //! Fast gaussian blur approximation.
 //!
-//! A Rust implementation of [`StackBlur`](https://github.com/flozz/StackBlur) by [Mario
-//! Klingemann](https://underdestruction.com).
-//! Very fast and accurate gaussian blur approximation.
-//! Based off of [Java implementation](https://github.com/verzqli/QQBlurView/blob/master/blurview/src/main/java/com/verzqli/blurview/stackblur/JavaBlurProcess.java) by Enrique López Mañas, licensed under Apache 2.0.
+//! Rust implementation of the [StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
+//! by [Mario Klingemann](https://underdestruction.com/2004/02/25/stackblur-2004).
+//! Based off of the [Java implementation](https://github.com/kikoso/android-stackblur)
+//! by Enrique López Mañas, licensed under Apache 2.0.
 //!
 //! # Examples
 //!

@@ -2,16 +2,14 @@
 [![crates.io](https://img.shields.io/crates/v/stackblur.svg)](https://crates.io/crates/stackblur)
 [![docs.rs](https://docs.rs/stackblur/badge.svg)](https://docs.rs/stackblur)
 
-Fast gaussian blur approximation.
-
-A Rust implementation of [`StackBlur`](https://github.com/flozz/StackBlur) by
-[Mario Klingemann](https://underdestruction.com). Very fast and accurate
-gaussian blur approximation. Based off of the [Java implementation](https://github.com/verzqli/QQBlurView/blob/master/blurview/src/main/java/com/verzqli/blurview/stackblur/JavaBlurProcess.java) by Enrique López Mañas, licensed
-under Apache 2.0.
+Rust implementation of the [StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
+by [Mario Klingemann](https://underdestruction.com/2004/02/25/stackblur-2004).
+Based off of the [Java implementation](https://github.com/kikoso/android-stackblur)
+by Enrique López Mañas, licensed under Apache 2.0.
 
 ## Notice
 
-stackblur is currently under heavy development, and may contain breaking
+This project is currently under heavy development, and may contain breaking
 changes between releases. Releases will be stabilized for `1.0.0`.
 
 ## Usage
@@ -93,4 +91,3 @@ aglorithm.
 * Many members of the Rust Discord that assisted with various questions and
 inspirations.
 * [Railway image](examples/railway.rgba) by [Martin Winkler](https://pixabay.com/users/fotoworkshop4you-2995268/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348") from [Pixabay](https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348).
-Want your name here? Contact me or open a PR!
