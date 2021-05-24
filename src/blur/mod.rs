@@ -1,8 +1,4 @@
-use std::collections::VecDeque;
-use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
-
-use itertools::peek_nth;
 
 mod blurstack;
 use blurstack::BlurStack;
@@ -10,14 +6,14 @@ use blurstack::BlurStack;
 mod columns;
 use columns::*;
 
-const fn pixel(r: u32, g: u32, b: u32) -> u32 {
-    (0xff << 24) | (r << 16) | (g << 8) | b
+const fn pixel(a: u32, r: u32, g: u32, b: u32) -> u32 {
+    a << 24 | r << 16 | g << 8 | b
 }
 
 /// Performs a pass of stackblur in both directions.
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
-    //blur_horiz(src, width, radius);
+    blur_horiz(src, width, radius);
     blur_vert(src, width, height, radius);
 }
 
@@ -31,7 +27,7 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
 
     src.chunks_exact_mut(width).for_each(|row| {
         let first = *row.first().unwrap();
-        let mut last = *row.last().unwrap();
+        let last = *row.last().unwrap();
 
         let mut queue = BlurStack::with_capacity(2 * r + 1);
 
@@ -41,34 +37,28 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
         }
 
         // fill with starting pixels
-        for v in row.iter().copied().chain(iter::repeat(last)).take(r) {
-            queue.push_back(v);
+        for i in r + 1..=2 * r {
+            queue.push_back(*row.get(i).unwrap_or(&last));
         }
 
         debug_assert_eq!(queue.len(), 2 * r + 1);
 
-        let mut row_iter = peek_nth(row.iter_mut());
-
-        while let Some(px) = row_iter.next() {
+        for (i, r) in (0..width).zip(r..) {
             // set pixel
-            //
-            // using MUL_TABLE and SHR_TABLE didn't speed things up in my testing of 100 iterations
-            *px = pixel(
-                queue.sum_r() / div,
-                queue.sum_g() / div,
-                queue.sum_b() / div,
-            );
+            let (alpha, red, green, blue) = queue.sums();
+            *row.get_mut(i).unwrap() = pixel(alpha / div, red / div, green / div, blue / div);
 
             // drop left edge of kernel
             let _ = queue.pop_front();
 
             // add right edge of kernel
-            let next = **row_iter.peek_nth(r).unwrap_or(&&mut last);
+            let next = *row.get(r).unwrap_or(&last);
             queue.push_back(next);
         }
     });
 }
 
+/*
 /// Performs a vertical pass of stackblur.
 /// Input is expected to be in linear RGB color space.
 pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
@@ -120,6 +110,7 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
         }
     }
 }
+*/
 
 #[cfg(test)]
 mod test {

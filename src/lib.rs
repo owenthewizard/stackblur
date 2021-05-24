@@ -37,4 +37,4 @@
 mod blur;
 pub use blur::blur;
 pub use blur::blur_horiz;
-pub use blur::blur_vert;
+//pub use blur::blur_vert;
