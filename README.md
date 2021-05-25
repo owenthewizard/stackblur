@@ -14,22 +14,13 @@ changes between releases. Releases will be stabilized for `1.0.0`.
 
 ## Usage
 
-```rust
+```rust no_run
 use std::num::{NonZeroU8, NonZeroUsize};
 
 use stackblur::blur;
 
-const RED: u32 = 0xffff0000;
-const GREEN: u32 = 0xff00ff00;
-const BLUE: u32 = 0xff0000ff;
-
 // load your image, u32 RGBA pixels
-let mut pixels: Vec<u32> = vec![
-    RED, GREEN, GREEN, RED,
-    GREEN, RED, BLUE, GREEN,
-    GREEN, BLUE, RED, GREEN,
-    RED, GREEN, GREEN, RED,
-];
+let mut pixels: Vec<u32> = unimplemented!()
 
 // blur!
 blur(
