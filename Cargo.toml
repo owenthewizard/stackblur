@@ -37,4 +37,5 @@ features = ["jpeg", "png", "jpeg_rayon"]
 [profile.release]
 lto = "fat"
 codegen-units = 1
-#debug = true # for flamegraph, disable for release
+# for flamegraph, disable for release
+#debug = true

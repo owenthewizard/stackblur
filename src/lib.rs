@@ -7,29 +7,20 @@
 //!
 //! # Examples
 //!
-//! ```rust
+//! ```rust no_run
 //! use std::num::{NonZeroU8, NonZeroUsize};
 //!
 //! use stackblur::blur;
 //!
-//! const RED: u32 = 0xffff0000;
-//! const GREEN: u32 = 0xff00ff00;
-//! const BLUE: u32 = 0xff0000ff;
-//!
 //! // load your image, u32 RGBA pixels
-//! let mut pixels: Vec<u32> = vec![
-//!     RED, GREEN, GREEN, RED,
-//!     GREEN, RED, BLUE, GREEN,
-//!     GREEN, BLUE, RED, GREEN,
-//!     RED, GREEN, GREEN, RED,
-//! ];
+//! let mut pixels: Vec<u32> = unimplemented!();
 //!
 //! // blur!
 //! blur(
 //!     &mut pixels,
-//!     NonZeroUsize::new(4).unwrap(),
-//!     NonZeroUsize::new(4).unwrap(),
-//!     NonZeroU8::new(1).unwrap(),
+//!     NonZeroUsize::new(1024).unwrap(),
+//!     NonZeroUsize::new(768).unwrap(),
+//!     NonZeroU8::new(15).unwrap(),
 //! );
 //!
 //! ```
