@@ -2,8 +2,10 @@
 [![crates.io](https://img.shields.io/crates/v/stackblur.svg)](https://crates.io/crates/stackblur)
 [![docs.rs](https://docs.rs/stackblur/badge.svg)](https://docs.rs/stackblur)
 
-Rust implementation of the [StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
+Rust implementation of the
+[StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
 by [Mario Klingemann](https://underdestruction.com/2004/02/25/stackblur-2004).
+
 Based off of the [Java implementation](https://github.com/kikoso/android-stackblur)
 by Enrique López Mañas, licensed under Apache 2.0.
 
@@ -76,9 +78,13 @@ See [LICENSE-APACHE](LICENSE-APACHE.md) and [LICENSE-MIT](LICENSE-MIT.md) for de
 
 ## Acknowledgments
 
-* [Mario Klingemann](https://underdestruction.com) for the original stackblur
-aglorithm.
-* Enrique López Mañas for the Java port this code was based off of.
-* Many members of the Rust Discord that assisted with various questions and
-inspirations.
-* [Railway image](examples/railway.rgba) by [Martin Winkler](https://pixabay.com/users/fotoworkshop4you-2995268/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348") from [Pixabay](https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348).
+* [Mario Klingemann](https://underdestruction.com) for the
+[original stackblur aglorithm](https://underdestruction.com/2004/02/25/stackblur-2004/).
+* Enrique López Mañas for
+[the Java port](https://github.com/kikoso/android-stackblur) this code was
+based off of.
+* Many members of the Rust Discord and Reddit communities that assisted with
+various questions and inspirations.
+* [Railway image](examples/railway.rgba) by
+[Martin Winkler](https://pixabay.com/users/fotoworkshop4you-2995268/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348")
+from [Pixabay](https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=1555348).
