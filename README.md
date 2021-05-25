@@ -1,6 +1,9 @@
 # stackblur
 [![crates.io](https://img.shields.io/crates/v/stackblur.svg)](https://crates.io/crates/stackblur)
 [![docs.rs](https://docs.rs/stackblur/badge.svg)](https://docs.rs/stackblur)
+![Code Grade](https://www.code-inspector.com/project/22667/status/svg)
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/owenthewizard/stackblur.svg)](http://isitmaintained.com/project/owenthewizard/stackblur "Average time to resolve an issue")
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/owenthewizard/stackblur.svg)](http://isitmaintained.com/project/owenthewizard/stackblur "Percentage of issues still open")
 
 Rust implementation of the
 [StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
@@ -38,9 +41,11 @@ blur(
 All examples blurred in both directions with radius 15.
 
 ![cballs without blur](samples/input/cballs.png)
+
 ![cballs blurred](samples/output/cballs.png)
 
 ![lonerider2 without blur](samples/input/lonerider2.jpg)
+
 ![lonerider2 blurred](samples/output/lonerider2.jpg)
 
 Add PNGs or JPEGs to [`samples/input`](samples/input) and run
@@ -68,7 +73,8 @@ Changes are documented in the [Changelog](CHANGELOG.md).
 See the [tags](https://github.com/owenthewizard/stackblur/tags) for available
 releases.
 
-## Authors
+## Contributors
+![Contributors avatars](https://contrib.rocks/image?repo=owenthewizard/stackblur)
 
 See [the list of contributors](https://github.com/owenthewizard/stackblur/contributors).
 
