@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
 
+use crate::columns::GridSlice;
+
 const fn alpha(p: u32) -> u32 {
     (p >> 24) & 0xff
 }
@@ -26,7 +28,7 @@ const fn pixel(a: u32, r: u32, g: u32, b: u32) -> u32 {
 /// Input is expected to be in linear RGB color space.
 pub fn blur(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
     blur_horiz(src, width, radius);
-    //blur_vert(src, width, height, radius);
+    blur_vert(src, width, height, radius);
 }
 
 /// Performs a horizontal pass of stackblur.
@@ -37,12 +39,10 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
     let r = radius as usize;
     let div = radius * (radius + 2) + 1;
 
-    let mut queue = VecDeque::with_capacity(2 * r + 1);
     src.chunks_exact_mut(width).for_each(|row| {
         let first = *row.first().unwrap();
         let last = *row.last().unwrap();
-
-        queue.clear();
+        let mut queue = VecDeque::with_capacity(2 * r + 1);
 
         let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
         // fill with left edge pixel
@@ -127,59 +127,103 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
     });
 }
 
-/*
 /// Performs a vertical pass of stackblur.
 /// Input is expected to be in linear RGB color space.
 pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, radius: NonZeroU8) {
-let width = width.get();
-let height = height.get();
-let radius = u32::from(radius.get());
-let r = radius as usize;
-let div = radius * (radius + 2) + 1;
+    let width = width.get();
+    let height = height.get();
+    let radius = u32::from(radius.get());
+    let r = radius as usize;
+    let div = radius * (radius + 2) + 1;
 
-for x in 0..width {
-let first = src[x];
-let mut last = src[x + width * (height - 1)];
+    let columns_iter = unsafe { src.columns_mut(width) };
+    columns_iter.for_each(|col_iter| {
+        let mut col_vec = col_iter.collect::<Vec<&mut u32>>();
+        let first = **col_vec.first().unwrap();
+        let mut last = **col_vec.last().unwrap();
+        let mut queue = VecDeque::with_capacity(2 * r + 1);
 
-// backfill queue with starting pixels
-let mut queue = src
-.column(x, width)
-.copied()
-.chain(iter::repeat(last))
-.take(r)
-.collect::<VecDeque<u32>>();
-queue.reserve_exact(2 * r + 1);
-let mut queue = BlurStack::from(queue);
+        let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
+        // fill with top edge pixel
+        for i in 0..=radius {
+            queue.push_back(first);
 
-let mut col_iter = peek_nth(src.column_mut(x, width));
+            sum_a += alpha(first) * (i + 1);
+            sum_r += red(first) * (i + 1);
+            sum_g += green(first) * (i + 1);
+            sum_b += blue(first) * (i + 1);
+        }
+        let mut sum_out_a = alpha(first) * (radius + 1);
+        let mut sum_out_r = red(first) * (radius + 1);
+        let mut sum_out_g = green(first) * (radius + 1);
+        let mut sum_out_b = blue(first) * (radius + 1);
 
-// fill with top edge pixel
-for _ in 0..=r {
-queue.push_front(first);
+        let (mut sum_in_a, mut sum_in_r, mut sum_in_g, mut sum_in_b) = (0, 0, 0, 0);
+        // fill with starting pixels
+        for (&&mut px, i) in col_vec
+            .iter()
+            .chain(iter::repeat(&&mut last))
+            .take(r)
+            .zip(1_u32..)
+        {
+            queue.push_back(px);
+
+            sum_a += alpha(px) * (radius + 1 - i);
+            sum_r += red(px) * (radius + 1 - i);
+            sum_g += green(px) * (radius + 1 - i);
+            sum_b += blue(px) * (radius + 1 - i);
+
+            sum_in_a += alpha(px);
+            sum_in_r += red(px);
+            sum_in_g += green(px);
+            sum_in_b += blue(px);
+        }
+
+        debug_assert_eq!(queue.len(), 2 * r + 1);
+
+        for (i, r) in (0..height).zip(r..) {
+            // set pixel
+            let px = col_vec.get_mut(i).unwrap();
+            **px = pixel(sum_a / div, sum_r / div, sum_g / div, sum_b / div);
+
+            let top = queue.pop_front().unwrap();
+            let center = queue[queue.len() / 2];
+            let bottom = **col_vec.get(r).unwrap_or(&&mut last);
+
+            sum_a -= sum_out_a;
+            sum_r -= sum_out_r;
+            sum_g -= sum_out_g;
+            sum_b -= sum_out_b;
+
+            sum_out_a -= alpha(top);
+            sum_out_r -= red(top);
+            sum_out_g -= green(top);
+            sum_out_b -= blue(top);
+
+            sum_in_a += alpha(bottom);
+            sum_in_r += red(bottom);
+            sum_in_g += green(bottom);
+            sum_in_b += blue(bottom);
+
+            sum_a += sum_in_a;
+            sum_r += sum_in_r;
+            sum_g += sum_in_g;
+            sum_b += sum_in_b;
+
+            sum_out_a += alpha(center);
+            sum_out_r += red(center);
+            sum_out_g += green(center);
+            sum_out_b += blue(center);
+
+            sum_in_a -= alpha(center);
+            sum_in_r -= red(center);
+            sum_in_g -= green(center);
+            sum_in_b -= blue(center);
+
+            queue.push_back(bottom);
+        }
+    });
 }
-
-debug_assert_eq!(queue.len(), 2 * r + 1);
-
-while let Some(px) = col_iter.next() {
-// set pixel
-//
-// using MUL_TABLE and SHR_TABLE didn't speed things up in my testing of 100 iterations
- *px = pixel(
- queue.sum_r() / div,
- queue.sum_g() / div,
- queue.sum_b() / div,
- );
-
-// drop top edge of kernel
-let _ = queue.pop_front();
-
-// add bottom edge of kernel
-let next = **col_iter.peek_nth(r).unwrap_or(&&mut last);
-queue.push_back(next);
-}
-}
-}
-*/
 
 #[cfg(test)]
 mod test {

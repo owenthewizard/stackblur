@@ -1,5 +1,7 @@
 // Thanks to The0x539#3295
 
+use std::mem::transmute;
+
 type Column<T> = std::iter::StepBy<std::iter::Skip<T>>;
 type SliceColumn<'a, T> = Column<std::slice::Iter<'a, T>>;
 type SliceColumnMut<'a, T> = Column<std::slice::IterMut<'a, T>>;
@@ -37,7 +39,7 @@ impl<T> GridSlice<T> for [T] {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Columns<'a, T: 'a> {
     v: &'a [T],
     width: usize,
@@ -88,7 +90,6 @@ impl<'long, T> Iterator for ColumnsMut<'long, T> {
     type Item = SliceColumnMut<'long, T>;
 
     fn next<'short>(&'short mut self) -> Option<Self::Item> {
-        use std::mem::transmute;
         if self.v.is_empty() || self.x == self.width {
             None
         } else {
