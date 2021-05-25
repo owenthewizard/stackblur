@@ -27,9 +27,9 @@ let mut pixels: Vec<u32> = unimplemented!()
 // blur!
 blur(
     &mut pixels,
-    NonZeroUsize::new(4).unwrap(),
-    NonZeroUsize::new(4).unwrap(),
-    NonZeroU8::new(1).unwrap(),
+    NonZeroUsize::new(1024).unwrap(),
+    NonZeroUsize::new(768).unwrap(),
+    NonZeroU8::new(15).unwrap(),
 );
 ```
 
