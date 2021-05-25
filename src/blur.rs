@@ -64,7 +64,6 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
         for (px, i) in row
             .iter()
             .copied()
-            .skip(r + 1)
             .chain(iter::repeat(last))
             .take(r)
             .zip(1_u32..)
