@@ -13,12 +13,6 @@ categories = ["multimedia::images", "algorithms", "graphics"]
 include = ["Cargo.toml", "README.md", "LICENSE-MIT.md", "LICENSE-APACHE.md", "src/*.rs"]
 edition = "2018"
 
-[badges]
-is-it-maintained-issue-resolution = { repository = "owenthewizard/stackblur" }
-is-it-maintained-open-issues = { repository = "owenthewizard/stackblur" }
-
-maintenance = { status = "actively-developed" }
-
 [dependencies]
 itertools = "0.10"
 
