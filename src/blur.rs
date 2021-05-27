@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::iter;
 use std::num::{NonZeroU8, NonZeroUsize};
 
 use crate::columns::GridSlice;
@@ -44,8 +43,8 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
         let last = *row.last().unwrap();
         let mut queue = VecDeque::with_capacity(2 * r + 1);
 
-        let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
         // fill with left edge pixel
+        let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
         for i in 0..=radius {
             queue.push_back(first);
 
@@ -59,15 +58,10 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
         let mut sum_out_g = green(first) * (radius + 1);
         let mut sum_out_b = blue(first) * (radius + 1);
 
-        let (mut sum_in_a, mut sum_in_r, mut sum_in_g, mut sum_in_b) = (0, 0, 0, 0);
         // fill with starting pixels
-        for (px, i) in row
-            .iter()
-            .copied()
-            .chain(iter::repeat(last))
-            .take(r)
-            .zip(1_u32..)
-        {
+        let (mut sum_in_a, mut sum_in_r, mut sum_in_g, mut sum_in_b) = (0, 0, 0, 0);
+        for i in 1..=radius {
+            let px = *row.get(i as usize).unwrap_or(&last);
             queue.push_back(px);
 
             sum_a += alpha(px) * (radius + 1 - i);
@@ -90,7 +84,7 @@ pub fn blur_horiz(src: &mut [u32], width: NonZeroUsize, radius: NonZeroU8) {
 
             let left = queue.pop_front().unwrap();
             let center = queue[queue.len() / 2];
-            let right = *row.get(r).unwrap_or(&last);
+            let right = *row.get(r + 1).unwrap_or(&last);
 
             sum_a -= sum_out_a;
             sum_r -= sum_out_r;
@@ -143,8 +137,8 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
         let mut last = **col_vec.last().unwrap();
         let mut queue = VecDeque::with_capacity(2 * r + 1);
 
-        let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
         // fill with top edge pixel
+        let (mut sum_a, mut sum_r, mut sum_g, mut sum_b) = (0, 0, 0, 0);
         for i in 0..=radius {
             queue.push_back(first);
 
@@ -158,14 +152,10 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
         let mut sum_out_g = green(first) * (radius + 1);
         let mut sum_out_b = blue(first) * (radius + 1);
 
-        let (mut sum_in_a, mut sum_in_r, mut sum_in_g, mut sum_in_b) = (0, 0, 0, 0);
         // fill with starting pixels
-        for (&&mut px, i) in col_vec
-            .iter()
-            .chain(iter::repeat(&&mut last))
-            .take(r)
-            .zip(1_u32..)
-        {
+        let (mut sum_in_a, mut sum_in_r, mut sum_in_g, mut sum_in_b) = (0, 0, 0, 0);
+        for i in 1..=radius {
+            let px = **col_vec.get(i as usize).unwrap_or(&&mut last);
             queue.push_back(px);
 
             sum_a += alpha(px) * (radius + 1 - i);
@@ -188,7 +178,7 @@ pub fn blur_vert(src: &mut [u32], width: NonZeroUsize, height: NonZeroUsize, rad
 
             let top = queue.pop_front().unwrap();
             let center = queue[queue.len() / 2];
-            let bottom = **col_vec.get(r).unwrap_or(&&mut last);
+            let bottom = **col_vec.get(r + 1).unwrap_or(&&mut last);
 
             sum_a -= sum_out_a;
             sum_r -= sum_out_r;
