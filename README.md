@@ -5,6 +5,10 @@
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/owenthewizard/stackblur.svg)](http://isitmaintained.com/project/owenthewizard/stackblur "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/owenthewizard/stackblur.svg)](http://isitmaintained.com/project/owenthewizard/stackblur "Percentage of issues still open")
 
+# Warning
+
+This crate is currently very broken, see #4, #5. Do not use it for the time being.
+
 Rust implementation of the
 [StackBlur algorithm](https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e#bfcb)
 by [Mario Klingemann](https://underdestruction.com/2004/02/25/stackblur-2004).

@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SIMD via `faster` crate.
 - Blur functions for RGB, RGBA, and `&mut [u8]`.
 
-## [0.1.0] - 2021-05-14
+## [0.1.0] - 2021-05-14 [YANKED]
 
 ### Added
 
